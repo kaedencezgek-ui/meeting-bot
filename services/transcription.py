@@ -32,11 +32,11 @@ async def transcribe_audio(file_path: str, api_key: str) -> TranscriptionResult:
 
     # Конфигурация транскрибации
     config = aai.TranscriptionConfig(
-        speech_models=[aai.SpeechModel.best],  # ["universal-3-pro"]
+        speech_model=aai.SpeechModel.best,
+        speaker_labels=True,
         language_code="ru",
-        speaker_labels=True,   # разделение по спикерам
         punctuate=True,
-        format_text=True,
+        format_text=True
     )
 
     # Запускаем синхронный SDK в отдельном потоке
