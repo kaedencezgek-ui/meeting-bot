@@ -19,6 +19,12 @@ from database import (
 )
 from services.transcription import TranscriptionError, transcribe_audio
 from services.summarizer import SummarizationError, summarize_transcript
+from services.cloud_download import (
+    CloudDownloadError,
+    detect_cloud_type,
+    download_from_cloud,
+    extract_cloud_link,
+)
 
 logger = logging.getLogger(__name__)
 router = Router(name="audio")
@@ -26,6 +32,9 @@ router = Router(name="audio")
 # Допустимые MIME-типы и расширения
 ALLOWED_EXTENSIONS = {".mp3", ".m4a", ".ogg", ".wav", ".oga", ".opus"}
 MAX_TELEGRAM_MESSAGE_LENGTH = 4096
+
+# Лимит Telegram Bot API на скачивание файлов
+TELEGRAM_DOWNLOAD_LIMIT_BYTES = 20 * 1024 * 1024  # 20 МБ
 
 
 
@@ -163,6 +172,19 @@ async def _process_audio(
         )
         return
 
+    # Проверяем лимит Telegram Bot API (20 МБ)
+    if file_size and file_size > TELEGRAM_DOWNLOAD_LIMIT_BYTES:
+        size_mb = file_size / (1024 * 1024)
+        await message.answer(
+            f"⚠️ Файл слишком большой для прямой загрузки через Telegram "
+            f"({size_mb:.1f} МБ, лимит — 20 МБ).\n\n"
+            "📎 Загрузите запись на <b>Google Drive</b> или <b>Яндекс Диск</b> "
+            "и отправьте мне ссылку.\n\n"
+            "<i>Убедитесь, что доступ по ссылке открыт (\"Все, у кого есть ссылка\").</i>",
+            parse_mode="HTML",
+        )
+        return
+
     # Уведомляем пользователя о начале обработки
     status_msg = await message.answer(
         "⏳ Принял запись. Обрабатываю, это займёт несколько минут..."
@@ -281,3 +303,163 @@ async def _process_audio(
             os.unlink(tmp_path)
         except OSError:
             pass
+
+
+# ────────────────────── Обработка ссылок на облачные хранилища ──────────────────────
+
+
+@router.message(F.text)
+async def handle_cloud_link(message: Message, bot: Bot, config: Config) -> None:
+    """
+    Обработка текстового сообщения со ссылкой на Google Drive / Яндекс Диск.
+    Скачивает файл напрямую из облака, минуя ограничения Telegram.
+    """
+    text = message.text.strip()
+
+    # Извлекаем ссылку из текста
+    link = extract_cloud_link(text)
+    if not link:
+        return  # не облачная ссылка — игнорируем
+
+    cloud_type = detect_cloud_type(link)
+    if not cloud_type:
+        return  # не поддерживаемый сервис
+
+    service_name = "Google Drive" if cloud_type == "gdrive" else "Яндекс Диск"
+    logger.info("Получена ссылка на %s от пользователя %d", service_name, message.from_user.id)
+
+    await _process_cloud_link(message, config, link, service_name)
+
+
+async def _process_cloud_link(
+    message: Message,
+    config: Config,
+    link: str,
+    service_name: str,
+) -> None:
+    """
+    Скачать файл из облака и запустить обработку (транскрибация + суммаризация).
+    """
+    status_msg = await message.answer(
+        f"☁️ Скачиваю файл с {service_name}..."
+    )
+
+    # Создаём запись в БД
+    async with async_session() as session:
+        user = await get_or_create_user(
+            session,
+            telegram_id=message.from_user.id,
+            username=message.from_user.username,
+        )
+        meeting = await create_meeting(session, user_id=user.id)
+        meeting_id = meeting.id
+
+    tmp_path = None
+    try:
+        # Скачиваем из облака
+        tmp_path, file_name = await download_from_cloud(link)
+        logger.info("Файл скачан из облака: %s → %s", file_name, tmp_path)
+
+        # ── Шаг 1: транскрибация ──
+        await status_msg.edit_text("🎙 Транскрибирую аудио (разделение по спикерам)...")
+
+        transcript_result = await transcribe_audio(tmp_path, config.assemblyai_api_key)
+
+        if not transcript_result.text.strip():
+            await status_msg.edit_text(
+                "⚠️ Не удалось распознать речь в записи. "
+                "Убедитесь, что аудио содержит разборчивую речь."
+            )
+            async with async_session() as session:
+                await update_meeting(session, meeting_id, status=MeetingStatus.ERROR)
+            return
+
+        # ── Шаг 2: суммаризация ──
+        await status_msg.edit_text("🤖 Анализирую транскрипт и составляю отчёт...")
+
+        report = await summarize_transcript(
+            transcript=transcript_result.text,
+            api_key=config.openrouter_api_key,
+            model=config.openrouter_model,
+        )
+
+        # ── Шаг 3: обновляем БД ──
+        async with async_session() as session:
+            await update_meeting(
+                session,
+                meeting_id,
+                status=MeetingStatus.DONE,
+                duration_seconds=transcript_result.duration_seconds,
+                word_count=transcript_result.word_count,
+            )
+
+        # ── Шаг 4: отправляем отчёт ──
+        await status_msg.edit_text("✅ Готово!")
+
+        duration_min = transcript_result.duration_seconds // 60
+        duration_sec = transcript_result.duration_seconds % 60
+        if duration_min > 0:
+            duration_str = f"{duration_min} мин {duration_sec} сек"
+        else:
+            duration_str = f"{duration_sec} сек"
+
+        footer = (
+            f"\n\n{'─' * 30}\n"
+            f"☁️ Источник: {service_name} | "
+            f"⏱️ Длительность: {duration_str} | "
+            f"🔤 Слов: {transcript_result.word_count}"
+        )
+
+        full_report = report + footer
+        await _send_long_message(message, full_report)
+
+        logger.info(
+            "Отчёт отправлен пользователю %d (встреча #%d, источник: %s)",
+            message.from_user.id, meeting_id, service_name,
+        )
+
+    except CloudDownloadError as exc:
+        logger.exception("Ошибка скачивания из облака для встречи #%d", meeting_id)
+        await status_msg.edit_text(
+            f"❌ Не удалось скачать файл с {service_name}:\n"
+            f"<code>{exc}</code>\n\n"
+            "Проверьте, что ссылка публичная и файл существует.",
+            parse_mode="HTML",
+        )
+        async with async_session() as session:
+            await update_meeting(session, meeting_id, status=MeetingStatus.ERROR)
+
+    except TranscriptionError as exc:
+        logger.exception("Ошибка транскрибации для встречи #%d", meeting_id)
+        await status_msg.edit_text(
+            f"❌ Ошибка при транскрибации аудио:\n<code>{exc}</code>\n\n"
+            "Попробуйте отправить файл ещё раз или в другом формате.",
+            parse_mode="HTML",
+        )
+        async with async_session() as session:
+            await update_meeting(session, meeting_id, status=MeetingStatus.ERROR)
+
+    except SummarizationError as exc:
+        logger.exception("Ошибка суммаризации для встречи #%d", meeting_id)
+        await status_msg.edit_text(
+            f"❌ Ошибка при анализе транскрипта:\n<code>{exc}</code>\n\n"
+            "Попробуйте ещё раз позже.",
+            parse_mode="HTML",
+        )
+        async with async_session() as session:
+            await update_meeting(session, meeting_id, status=MeetingStatus.ERROR)
+
+    except Exception as exc:
+        logger.exception("Непредвиденная ошибка для встречи #%d", meeting_id)
+        await status_msg.edit_text(
+            "❌ Произошла непредвиденная ошибка. Попробуйте позже."
+        )
+        async with async_session() as session:
+            await update_meeting(session, meeting_id, status=MeetingStatus.ERROR)
+
+    finally:
+        if tmp_path:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
