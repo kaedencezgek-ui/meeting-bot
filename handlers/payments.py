@@ -1,4 +1,6 @@
 import logging
+import re
+import uuid
 from aiogram import Router, F, Bot
 from aiogram.filters import Command
 from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
@@ -48,7 +50,8 @@ async def process_buy_callback(callback: CallbackQuery, state: FSMContext):
 @router.message(PaymentStates.waiting_for_email)
 async def process_email(message: Message, state: FSMContext, config: Config):
     email = message.text.strip()
-    if "@" not in email or "." not in email:
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(pattern, email):
         await message.answer("Пожалуйста, введите корректный email адрес.")
         return
         
@@ -68,9 +71,10 @@ async def process_email(message: Message, state: FSMContext, config: Config):
                 config.lava_api_key, user.id, pkg["offer_id"], email
             )
             
+            order_id = str(uuid.uuid4())
             await create_payment(
-                session, user.id, pkg["offer_id"], package_name,
-                pkg["price"], pkg["minutes"], ""
+                session, user.id, order_id, package_name,
+                pkg["price"], pkg["minutes"], pkg["offer_id"]
             )
             
             await wait_msg.edit_text(

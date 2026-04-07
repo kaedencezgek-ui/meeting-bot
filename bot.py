@@ -68,7 +68,7 @@ async def lava_webhook(request: web.Request) -> web.Response:
             async with async_session() as session:
                 from database import Payment
                 # Find pending payment by user_id and offer_id
-                stmt = select(Payment).where(Payment.user_id == user_id, Payment.order_id == offer_id, Payment.status == "pending")
+                stmt = select(Payment).where(Payment.user_id == user_id, Payment.lava_invoice_id == offer_id, Payment.status == "pending")
                 payment = (await session.execute(stmt)).scalars().first()
                 
                 if payment:
