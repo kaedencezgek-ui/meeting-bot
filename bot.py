@@ -114,8 +114,8 @@ async def main() -> None:
 
     # Подключаем роутеры
     dp.include_router(start.router)
-    dp.include_router(audio.router)
     dp.include_router(payments.router)
+    dp.include_router(audio.router)
     
     # Инициализируем aiohttp web server
     app = web.Application()
