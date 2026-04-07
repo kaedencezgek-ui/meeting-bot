@@ -17,14 +17,12 @@ async def create_invoice(lava_api_key: str, user_id: int, offer_id: str, buyer_e
     url = "https://gate.lava.top/api/v2/invoice"
     
     payload = {
+        "email": buyer_email,
         "offerId": offer_id,
         "currency": "RUB",
         "buyerLanguage": "RU",
         "clientUtm": {"utm_source": str(user_id)}
     }
-    
-    if buyer_email:
-        payload["buyerEmail"] = buyer_email
 
     
     headers = {
