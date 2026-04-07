@@ -198,13 +198,13 @@ async def _process_audio(
             telegram_id=message.from_user.id,
             username=message.from_user.username,
         )
-        # Check balance (assume 10 min margin)
-        if user.minutes_balance < 10:
+        # Check balance
+        if user.minutes_balance <= 0:
             await message.answer(
                 "❌ Недостаточно минут для обработки. Пожалуйста, пополните баланс.",
                 reply_markup=__import__("aiogram.types", fromlist=["InlineKeyboardMarkup"]).InlineKeyboardMarkup(inline_keyboard=[[
                     __import__("aiogram.types", fromlist=["InlineKeyboardButton"]).InlineKeyboardButton(text="🛒 Купить пакет", callback_data="buy_menu_placeholder")
-                ]])  # Actually we can just suggest /buy
+                ]])
             )
             # Send simplified message telling them to use /buy
             await message.answer("Для пополнения баланса используйте команду /buy")
@@ -370,7 +370,7 @@ async def _process_cloud_link(
             telegram_id=message.from_user.id,
             username=message.from_user.username,
         )
-        if user.minutes_balance < 10:
+        if user.minutes_balance <= 0:
             await message.answer(
                 "❌ Недостаточно минут для обработки. Пожалуйста, пополните баланс.",
                 reply_markup=__import__("aiogram.types", fromlist=["InlineKeyboardMarkup"]).InlineKeyboardMarkup(inline_keyboard=[[

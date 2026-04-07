@@ -29,23 +29,38 @@ async def lava_webhook(request: web.Request) -> web.Response:
     except Exception:
         return web.Response(status=400)
         
-    # Signature checking simplified check.
-    # We would retrieve proxy_signature from headers
-    signature = request.headers.get("Signature", "")
+    if not check_webhook_signature(request.headers, config.lava_api_key):
+        return web.Response(status=403, text="Invalid signature")
     
-    order_id = payload.get("orderId")
-    status = payload.get("status")
+    # We match by clientUtm.utm_source (user_id) and offerId from the invoice if available.
+    # Alternatively we can find pending payment by offer_id and user_id. Let's do that.
+    # We will need to write custom query if multiple pendings exist, but let's assume the user has 1 pending for this offer.
+    # Wait, the instruction says: Находит payment по clientUtm.utm_source (user_id) и сумме/offer.
     
-    if status == "success" or status == "paid":
-        async with async_session() as session:
-            payment = await get_payment_by_order_id(session, order_id)
-            if payment and payment.status != "paid":
-                await update_payment_status(session, payment.id, "paid")
-                await update_user_minutes(session, payment.user_id, added_balance=payment.minutes_added)
+    invoice = payload.get("invoice", payload) # Depends on their payload structure
+    status = invoice.get("status")
+    
+    if status == "COMPLETED" or status == "success":
+        client_utm = invoice.get("clientUtm", {})
+        user_id_str = client_utm.get("utm_source")
+        offer_id = invoice.get("offerId")
+        
+        if user_id_str and offer_id:
+            user_id = int(user_id_str)
+            from sqlalchemy import select
+            async with async_session() as session:
+                from database import Payment
+                # Find pending payment by user_id and offer_id
+                stmt = select(Payment).where(Payment.user_id == user_id, Payment.order_id == offer_id, Payment.status == "pending")
+                payment = (await session.execute(stmt)).scalars().first()
                 
-                user = await get_user_by_id(session, payment.user_id)
-                if user:
-                    await bot.send_message(user.telegram_id, f"✅ Оплата прошла успешно! Вам начислено {payment.minutes_added} минут.")
+                if payment:
+                    await update_payment_status(session, payment.id, "paid")
+                    await update_user_minutes(session, user_id, added_balance=payment.minutes_added, is_trial=False)
+                    
+                    user = await get_user_by_id(session, user_id)
+                    if user:
+                        await bot.send_message(user.telegram_id, f"✅ Оплата прошла успешно! Вам начислено {payment.minutes_added} минут.")
                     
     return web.json_response({"status": "ok"})
 

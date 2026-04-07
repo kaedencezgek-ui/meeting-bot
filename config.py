@@ -24,7 +24,6 @@ class Config:
 
     # Lava.top
     lava_api_key: str
-    lava_shop_id: str
     webhook_url: str
 
     # Прокси (опционально, для обхода блокировки Telegram API)
@@ -52,7 +51,6 @@ def load_config() -> Config:
     proxy_url = os.getenv("PROXY_URL")  # опционально
     
     lava_api_key = os.getenv("LAVA_API_KEY", "")
-    lava_shop_id = os.getenv("LAVA_SHOP_ID", "")
     webhook_url = os.getenv("WEBHOOK_URL", "")
 
     return Config(
@@ -62,6 +60,5 @@ def load_config() -> Config:
         openrouter_model=openrouter_model,
         proxy_url=proxy_url,
         lava_api_key=lava_api_key,
-        lava_shop_id=lava_shop_id,
         webhook_url=webhook_url,
     )
