@@ -32,7 +32,7 @@ async def transcribe_audio(file_path: str, api_key: str) -> TranscriptionResult:
 
     # Конфигурация транскрибации
     config = aai.TranscriptionConfig(
-        speech_model=aai.SpeechModel.best,
+        speech_models=['universal-3-pro', 'universal-2'],
         speaker_labels=True,
         language_code="ru",
         punctuate=True,

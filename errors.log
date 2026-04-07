@@ -1,0 +1,277 @@
+2026-04-05 08:20:21 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #1
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 188, in _process_audio
+    await _download_file(bot, file_id, tmp_path)
+  File "/root/meeting-bot/handlers/audio.py", line 36, in _download_file
+    file = await bot.get_file(file_id)
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/bot.py", line 1801, in get_file
+    return await self(call, request_timeout=request_timeout)
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/bot.py", line 494, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/session/base.py", line 254, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/session/aiohttp.py", line 189, in make_request
+    response = self.check_response(
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/session/base.py", line 120, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: file is too big
+2026-04-05 08:21:29 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #2
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 194, in _process_audio
+    transcript_result = await transcribe_audio(tmp_path, config.assemblyai_api_key)
+  File "/root/meeting-bot/services/transcription.py", line 42, in transcribe_audio
+    result = await asyncio.to_thread(_run_transcription, file_path, config)
+  File "/usr/lib/python3.10/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+  File "/usr/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/root/meeting-bot/services/transcription.py", line 53, in _run_transcription
+    transcript = transcriber.transcribe(file_path, config=config)
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 1003, in transcribe
+    return self._impl.transcribe(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 789, in transcribe
+    return self.transcribe_file(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 767, in transcribe_file
+    return self.transcribe_url(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 746, in transcribe_url
+    response=api.create_transcript(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/api.py", line 45, in create_transcript
+    raise types.TranscriptError(
+assemblyai.types.TranscriptError: failed to transcribe url https://cdn.assemblyai.com/upload/8736a7bd13e3e12986dff1cbb3a9c95836741a4f813a3b35a147189b447d4b4c/0125855e-2e4a-47d2-a41d-2fc836a5c69d: "speech_models" must be a non-empty list containing one or more of: "universal-3-pro", "universal-2"
+2026-04-05 11:48:03 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:07 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:08 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:12 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:14 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:18 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:20 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:25 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:26 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:32 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:33 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:36 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:41 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:45 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:50 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:48:55 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:01 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:06 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:10 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:15 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:20 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:25 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:30 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:35 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:40 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:45 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:50 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:49:55 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:00 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:05 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:10 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:15 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:20 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:25 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:30 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:35 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:41 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:46 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:51 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:50:56 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 11:52:21 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #3
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 188, in _process_audio
+    await _download_file(bot, file_id, tmp_path)
+  File "/root/meeting-bot/handlers/audio.py", line 36, in _download_file
+    file = await bot.get_file(file_id)
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/bot.py", line 1801, in get_file
+    return await self(call, request_timeout=request_timeout)
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/bot.py", line 494, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/session/base.py", line 254, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/session/aiohttp.py", line 189, in make_request
+    response = self.check_response(
+  File "/usr/local/lib/python3.10/dist-packages/aiogram/client/session/base.py", line 120, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: file is too big
+2026-04-05 11:55:37 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #4
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 194, in _process_audio
+    transcript_result = await transcribe_audio(tmp_path, config.assemblyai_api_key)
+  File "/root/meeting-bot/services/transcription.py", line 43, in transcribe_audio
+    result = await asyncio.to_thread(_run_transcription, file_path, config)
+  File "/usr/lib/python3.10/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+  File "/usr/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/root/meeting-bot/services/transcription.py", line 54, in _run_transcription
+    transcript = transcriber.transcribe(file_path, config=config)
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 1003, in transcribe
+    return self._impl.transcribe(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 789, in transcribe
+    return self.transcribe_file(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 767, in transcribe_file
+    return self.transcribe_url(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 746, in transcribe_url
+    response=api.create_transcript(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/api.py", line 45, in create_transcript
+    raise types.TranscriptError(
+assemblyai.types.TranscriptError: failed to transcribe url https://cdn.assemblyai.com/upload/9e3e20bc71b7f62a0ee3ad2d1ef6b7414275b0273ff6446d77dcd7770dbb6c8a/8cb2a487-41fe-4888-8508-7b550ed814ea: speech_model is deprecated. Use "speech_models" instead. See documentation: https://www.assemblyai.com/docs/pre-recorded-audio/select-the-speech-model
+2026-04-05 12:02:47 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #5
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 216, in _process_audio
+    transcript_result = await transcribe_audio(tmp_path, config.assemblyai_api_key)
+  File "/root/meeting-bot/services/transcription.py", line 34, in transcribe_audio
+    config = aai.TranscriptionConfig(
+TypeError: TranscriptionConfig.__init__() got an unexpected keyword argument 'speech_models'
+2026-04-05 12:06:11 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #6
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 366, in _process_cloud_link
+    transcript_result = await transcribe_audio(tmp_path, config.assemblyai_api_key)
+  File "/root/meeting-bot/services/transcription.py", line 34, in transcribe_audio
+    config = aai.TranscriptionConfig(
+TypeError: TranscriptionConfig.__init__() got an unexpected keyword argument 'speech_models'
+2026-04-05 12:09:39 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #7
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 366, in _process_cloud_link
+    transcript_result = await transcribe_audio(tmp_path, config.assemblyai_api_key)
+  File "/root/meeting-bot/services/transcription.py", line 43, in transcribe_audio
+    result = await asyncio.to_thread(_run_transcription, file_path, config)
+  File "/usr/lib/python3.10/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+  File "/usr/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/root/meeting-bot/services/transcription.py", line 54, in _run_transcription
+    transcript = transcriber.transcribe(file_path, config=config)
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 1146, in transcribe
+    return self._impl.transcribe(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 922, in transcribe
+    return self.transcribe_file(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 900, in transcribe_file
+    return self.transcribe_url(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 879, in transcribe_url
+    response=api.create_transcript(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/api.py", line 45, in create_transcript
+    raise types.TranscriptError(
+assemblyai.types.TranscriptError: failed to transcribe url https://cdn.assemblyai.com/upload/cd2029244dbcfac800da0825f4d8f5db05a93eaaf7c75d8c25919c96cbad27cd/d5614e49-ebad-4a62-a40a-92f6e8a49876: "speech_models" must be a non-empty list containing one or more of: "universal-3-pro", "universal-2"
+2026-04-05 12:13:56 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #8
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 366, in _process_cloud_link
+    transcript_result = await transcribe_audio(tmp_path, config.assemblyai_api_key)
+  File "/root/meeting-bot/services/transcription.py", line 43, in transcribe_audio
+    result = await asyncio.to_thread(_run_transcription, file_path, config)
+  File "/usr/lib/python3.10/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+  File "/usr/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/root/meeting-bot/services/transcription.py", line 54, in _run_transcription
+    transcript = transcriber.transcribe(file_path, config=config)
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 1146, in transcribe
+    return self._impl.transcribe(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 922, in transcribe
+    return self.transcribe_file(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 900, in transcribe_file
+    return self.transcribe_url(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 879, in transcribe_url
+    response=api.create_transcript(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/api.py", line 45, in create_transcript
+    raise types.TranscriptError(
+assemblyai.types.TranscriptError: failed to transcribe url https://cdn.assemblyai.com/upload/1d28b3afa81eabf499b6a44a7a0d8fb5281ad2277ad14eed7461b9973bb631e3/f2ba9a3d-5a3e-4f86-98d2-75cf4b3ae430: speech_model is deprecated. Use "speech_models" instead. See documentation: https://www.assemblyai.com/docs/pre-recorded-audio/select-the-speech-model
+2026-04-05 12:22:30 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:22:35 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:22:36 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:22:40 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:22:41 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:22:46 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:22:48 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:22:54 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:22:57 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:00 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:03 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:07 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:11 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:16 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:21 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:26 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:31 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:37 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:42 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:47 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:52 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:23:57 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:02 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:07 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:12 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:17 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:22 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:27 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:32 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:37 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:42 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:48 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:53 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:24:58 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:03 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:08 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:13 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:18 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:23 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:28 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:33 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:39 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:44 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:49 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:54 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:25:59 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:26:04 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:26:09 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:26:14 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:26:19 | ERROR    | aiogram.dispatcher | Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-05 12:30:35 | ERROR    | handlers.audio | Непредвиденная ошибка для встречи #9
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 366, in _process_cloud_link
+    transcript_result = await transcribe_audio(tmp_path, config.assemblyai_api_key)
+  File "/root/meeting-bot/services/transcription.py", line 43, in transcribe_audio
+    result = await asyncio.to_thread(_run_transcription, file_path, config)
+  File "/usr/lib/python3.10/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+  File "/usr/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/root/meeting-bot/services/transcription.py", line 54, in _run_transcription
+    transcript = transcriber.transcribe(file_path, config=config)
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 1146, in transcribe
+    return self._impl.transcribe(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 922, in transcribe
+    return self.transcribe_file(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 900, in transcribe_file
+    return self.transcribe_url(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/transcriber.py", line 879, in transcribe_url
+    response=api.create_transcript(
+  File "/usr/local/lib/python3.10/dist-packages/assemblyai/api.py", line 45, in create_transcript
+    raise types.TranscriptError(
+assemblyai.types.TranscriptError: failed to transcribe url https://cdn.assemblyai.com/upload/ae81de1c1597d3595ab801cf61447c58ce396ba3207c6505af0a4e6ebd656e83/b91f5dbf-4e70-4cbd-b8f2-0ad9de303724: ru is not currently supported by universal-3-pro. Use "speech_models": ["universal-3-pro", "universal-2"] to enable transcription for 99 languages including ru.
+2026-04-05 12:40:17 | ERROR    | services.summarizer | Ошибка OpenRouter [404]: {"error":{"message":"No endpoints found for anthropic/claude-3.5-sonnet.","code":404},"user_id":"user_2yeITAyfyL33BnXqfERJvi2qn7K"}
+2026-04-05 12:40:17 | ERROR    | handlers.audio | Ошибка суммаризации для встречи #10
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 380, in _process_cloud_link
+    report = await summarize_transcript(
+  File "/root/meeting-bot/services/summarizer.py", line 82, in summarize_transcript
+    raise SummarizationError(
+services.summarizer.SummarizationError: OpenRouter вернул ошибку 404: {"error":{"message":"No endpoints found for anthropic/claude-3.5-sonnet.","code":404},"user_id":"user_2yeITAyfyL33BnXqfERJvi2qn7K"}
+2026-04-05 12:54:34 | ERROR    | services.summarizer | Ошибка OpenRouter [404]: {"error":{"message":"No endpoints found for anthropic/claude-3-5-sonnet.","code":404},"user_id":"user_2yeITAyfyL33BnXqfERJvi2qn7K"}
+2026-04-05 12:54:34 | ERROR    | handlers.audio | Ошибка суммаризации для встречи #11
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 380, in _process_cloud_link
+    report = await summarize_transcript(
+  File "/root/meeting-bot/services/summarizer.py", line 82, in summarize_transcript
+    raise SummarizationError(
+services.summarizer.SummarizationError: OpenRouter вернул ошибку 404: {"error":{"message":"No endpoints found for anthropic/claude-3-5-sonnet.","code":404},"user_id":"user_2yeITAyfyL33BnXqfERJvi2qn7K"}
+2026-04-05 17:45:51 | ERROR    | services.summarizer | Ошибка OpenRouter [404]: {"error":{"message":"No endpoints found for anthropic/claude-3.5-sonnet.","code":404},"user_id":"user_2yeITAyfyL33BnXqfERJvi2qn7K"}
+2026-04-05 17:45:51 | ERROR    | handlers.audio | Ошибка суммаризации для встречи #12
+Traceback (most recent call last):
+  File "/root/meeting-bot/handlers/audio.py", line 380, in _process_cloud_link
+    report = await summarize_transcript(
+  File "/root/meeting-bot/services/summarizer.py", line 82, in summarize_transcript
+    raise SummarizationError(
+services.summarizer.SummarizationError: OpenRouter вернул ошибку 404: {"error":{"message":"No endpoints found for anthropic/claude-3.5-sonnet.","code":404},"user_id":"user_2yeITAyfyL33BnXqfERJvi2qn7K"}
