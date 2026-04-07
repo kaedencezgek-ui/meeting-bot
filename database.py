@@ -43,8 +43,13 @@ class User(Base):
         DateTime, default=datetime.datetime.utcnow
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    minutes_balance: Mapped[int] = mapped_column(Integer, default=180)
+    minutes_used: Mapped[int] = mapped_column(Integer, default=0)
+    is_trial: Mapped[bool] = mapped_column(Boolean, default=True)
 
     meetings: Mapped[list["Meeting"]] = relationship(back_populates="user")
+    payments: Mapped[list["Payment"]] = relationship(back_populates="user")
+
 
 
 class Meeting(Base):
@@ -63,6 +68,25 @@ class Meeting(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="meetings")
+
+
+class Payment(Base):
+    """Таблица платежей."""
+    __tablename__ = "payments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    order_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    package_name: Mapped[str] = mapped_column(String(32), nullable=False)
+    amount_rub: Mapped[int] = mapped_column(Integer, nullable=False)
+    minutes_added: Mapped[int] = mapped_column(Integer, nullable=False)
+    lava_invoice_id: Mapped[str | None] = mapped_column(String(128))
+    status: Mapped[str] = mapped_column(String(32), default="pending")  # pending, paid, failed
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
+
+    user: Mapped["User"] = relationship(back_populates="payments")
 
 
 # ────────────────────── Инициализация БД ──────────────────────
@@ -130,3 +154,63 @@ async def update_meeting(
         meeting.word_count = word_count
 
     await session.commit()
+
+
+async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
+    stmt = select(User).where(User.id == user_id)
+    return (await session.execute(stmt)).scalar_one_or_none()
+
+
+async def get_user_by_telegram_id(session: AsyncSession, telegram_id: int) -> User | None:
+    stmt = select(User).where(User.telegram_id == telegram_id)
+    return (await session.execute(stmt)).scalar_one_or_none()
+
+
+async def update_user_minutes(
+    session: AsyncSession, user_id: int, added_balance: int = 0, added_used: int = 0, is_trial: bool | None = None
+):
+    stmt = select(User).where(User.id == user_id)
+    user = (await session.execute(stmt)).scalar_one_or_none()
+    if user:
+        user.minutes_balance += added_balance
+        user.minutes_used += added_used
+        if is_trial is not None:
+            user.is_trial = is_trial
+        await session.commit()
+
+
+async def create_payment(
+    session: AsyncSession,
+    user_id: int,
+    order_id: str,
+    package_name: str,
+    amount_rub: int,
+    minutes_added: int,
+    lava_invoice_id: str,
+) -> Payment:
+    payment = Payment(
+        user_id=user_id,
+        order_id=order_id,
+        package_name=package_name,
+        amount_rub=amount_rub,
+        minutes_added=minutes_added,
+        lava_invoice_id=lava_invoice_id,
+        status="pending",
+    )
+    session.add(payment)
+    await session.commit()
+    await session.refresh(payment)
+    return payment
+
+
+async def get_payment_by_order_id(session: AsyncSession, order_id: str) -> Payment | None:
+    stmt = select(Payment).where(Payment.order_id == order_id)
+    return (await session.execute(stmt)).scalar_one_or_none()
+
+
+async def update_payment_status(session: AsyncSession, payment_id: int, status: str):
+    stmt = select(Payment).where(Payment.id == payment_id)
+    payment = (await session.execute(stmt)).scalar_one_or_none()
+    if payment:
+        payment.status = status
+        await session.commit()

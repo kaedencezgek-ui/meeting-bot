@@ -16,6 +16,7 @@ from database import (
     create_meeting,
     get_or_create_user,
     update_meeting,
+    update_user_minutes,
 )
 from services.transcription import TranscriptionError, transcribe_audio
 from services.summarizer import SummarizationError, summarize_transcript
@@ -197,6 +198,18 @@ async def _process_audio(
             telegram_id=message.from_user.id,
             username=message.from_user.username,
         )
+        # Check balance (assume 10 min margin)
+        if user.minutes_balance < 10:
+            await message.answer(
+                "❌ Недостаточно минут для обработки. Пожалуйста, пополните баланс.",
+                reply_markup=__import__("aiogram.types", fromlist=["InlineKeyboardMarkup"]).InlineKeyboardMarkup(inline_keyboard=[[
+                    __import__("aiogram.types", fromlist=["InlineKeyboardButton"]).InlineKeyboardButton(text="🛒 Купить пакет", callback_data="buy_menu_placeholder")
+                ]])  # Actually we can just suggest /buy
+            )
+            # Send simplified message telling them to use /buy
+            await message.answer("Для пополнения баланса используйте команду /buy")
+            return
+            
         meeting = await create_meeting(session, user_id=user.id)
         meeting_id = meeting.id
 
@@ -234,6 +247,7 @@ async def _process_audio(
         )
 
         # ── Шаг 3: обновляем БД ──
+        duration_minutes = max(1, transcript_result.duration_seconds // 60)
         async with async_session() as session:
             await update_meeting(
                 session,
@@ -242,6 +256,10 @@ async def _process_audio(
                 duration_seconds=transcript_result.duration_seconds,
                 word_count=transcript_result.word_count,
             )
+            # Deduct minutes from user
+            await update_user_minutes(session, user.id, added_balance=-duration_minutes, added_used=duration_minutes)
+            user_balance = (await get_or_create_user(session, telegram_id=message.from_user.id, username=message.from_user.username)).minutes_balance
+
 
         # ── Шаг 4: отправляем отчёт ──
         await status_msg.edit_text("✅ Готово!")
@@ -258,7 +276,8 @@ async def _process_audio(
         footer = (
             f"\n\n{'─' * 30}\n"
             f"⏱️ Длительность записи: {duration_str} | "
-            f"🔤 Слов в транскрипте: {transcript_result.word_count}"
+            f"🔤 Слов в транскрипте: {transcript_result.word_count}\n"
+            f"💰 Остаток баланса: {user_balance} минут"
         )
 
         full_report = report + footer
@@ -351,6 +370,16 @@ async def _process_cloud_link(
             telegram_id=message.from_user.id,
             username=message.from_user.username,
         )
+        if user.minutes_balance < 10:
+            await message.answer(
+                "❌ Недостаточно минут для обработки. Пожалуйста, пополните баланс.",
+                reply_markup=__import__("aiogram.types", fromlist=["InlineKeyboardMarkup"]).InlineKeyboardMarkup(inline_keyboard=[[
+                    __import__("aiogram.types", fromlist=["InlineKeyboardButton"]).InlineKeyboardButton(text="🛒 Купить пакет", callback_data="buy_menu_placeholder")
+                ]])
+            )
+            await message.answer("Для пополнения баланса используйте команду /buy")
+            return
+            
         meeting = await create_meeting(session, user_id=user.id)
         meeting_id = meeting.id
 
@@ -384,6 +413,7 @@ async def _process_cloud_link(
         )
 
         # ── Шаг 3: обновляем БД ──
+        duration_minutes = max(1, transcript_result.duration_seconds // 60)
         async with async_session() as session:
             await update_meeting(
                 session,
@@ -392,6 +422,9 @@ async def _process_cloud_link(
                 duration_seconds=transcript_result.duration_seconds,
                 word_count=transcript_result.word_count,
             )
+            await update_user_minutes(session, user.id, added_balance=-duration_minutes, added_used=duration_minutes)
+            user_balance = (await get_or_create_user(session, telegram_id=message.from_user.id, username=message.from_user.username)).minutes_balance
+
 
         # ── Шаг 4: отправляем отчёт ──
         await status_msg.edit_text("✅ Готово!")
@@ -407,7 +440,8 @@ async def _process_cloud_link(
             f"\n\n{'─' * 30}\n"
             f"☁️ Источник: {service_name} | "
             f"⏱️ Длительность: {duration_str} | "
-            f"🔤 Слов: {transcript_result.word_count}"
+            f"🔤 Слов: {transcript_result.word_count}\n"
+            f"💰 Остаток баланса: {user_balance} минут"
         )
 
         full_report = report + footer

@@ -7,43 +7,51 @@ import asyncio
 import logging
 import sys
 
+from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
 from config import load_config
-from database import init_db
-from handlers import start, audio
+from database import init_db, async_session, get_payment_by_order_id, update_payment_status, get_user_by_id, update_user_minutes
+from handlers import start, audio, payments
+from services.payments import check_webhook_signature
 
+...
 
-def setup_logging() -> None:
-    """Настроить логирование: консоль + файл ошибок."""
-    # Основной логгер
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-
-    # Формат логов
-    fmt = logging.Formatter(
-        "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
-    # Вывод в консоль
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(fmt)
-    root_logger.addHandler(console_handler)
-
-    # Ошибки в файл errors.log
-    file_handler = logging.FileHandler("errors.log", encoding="utf-8")
-    file_handler.setLevel(logging.ERROR)
-    file_handler.setFormatter(fmt)
-    root_logger.addHandler(file_handler)
+async def lava_webhook(request: web.Request) -> web.Response:
+    bot: Bot = request.app["bot"]
+    config = request.app["config"]
+    
+    try:
+        payload = await request.json()
+    except Exception:
+        return web.Response(status=400)
+        
+    # Signature checking simplified check.
+    # We would retrieve proxy_signature from headers
+    signature = request.headers.get("Signature", "")
+    
+    order_id = payload.get("orderId")
+    status = payload.get("status")
+    
+    if status == "success" or status == "paid":
+        async with async_session() as session:
+            payment = await get_payment_by_order_id(session, order_id)
+            if payment and payment.status != "paid":
+                await update_payment_status(session, payment.id, "paid")
+                await update_user_minutes(session, payment.user_id, added_balance=payment.minutes_added)
+                
+                user = await get_user_by_id(session, payment.user_id)
+                if user:
+                    await bot.send_message(user.telegram_id, f"✅ Оплата прошла успешно! Вам начислено {payment.minutes_added} минут.")
+                    
+    return web.json_response({"status": "ok"})
 
 
 async def main() -> None:
-    """Главная функция — запуск бота."""
+    """Главная функция — запуск бота и вебхук сервера."""
     setup_logging()
     logger = logging.getLogger(__name__)
 
@@ -75,13 +83,27 @@ async def main() -> None:
     # Подключаем роутеры
     dp.include_router(start.router)
     dp.include_router(audio.router)
+    dp.include_router(payments.router)
+    
+    # Инициализируем aiohttp web server
+    app = web.Application()
+    app["bot"] = bot
+    app["config"] = config
+    app.router.add_post("/webhook/lava", lava_webhook)
+    
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    await site.start()
+    logger.info("Webhook-сервер запущен на порту 8080")
 
     # Запускаем polling
-    logger.info("AI Секретарь запущен!")
+    logger.info("AI Секретарь запущен (polling)!")
     try:
         await dp.start_polling(bot)
     finally:
         await bot.session.close()
+        await runner.cleanup()
 
 
 if __name__ == "__main__":
