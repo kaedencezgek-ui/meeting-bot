@@ -18,8 +18,25 @@ from database import init_db, async_session, get_payment_by_order_id, update_pay
 from handlers import start, audio, payments
 from services.payments import check_webhook_signature
 
-...
+def setup_logging() -> None:
+    """Настроить логирование: консоль + файл ошибок."""
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
 
+    fmt = logging.Formatter(
+        "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(fmt)
+    root_logger.addHandler(console_handler)
+
+    file_handler = logging.FileHandler("errors.log", encoding="utf-8")
+    file_handler.setLevel(logging.ERROR)
+    file_handler.setFormatter(fmt)
+    root_logger.addHandler(file_handler)
 async def lava_webhook(request: web.Request) -> web.Response:
     bot: Bot = request.app["bot"]
     config = request.app["config"]
