@@ -30,13 +30,19 @@ async def create_invoice(lava_api_key: str, user_id: int, offer_id: str, buyer_e
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, json=payload, headers=headers)
+            if not resp.is_success:
+                logger.error(f"Lava API error response [{resp.status_code}]: {resp.text}")
             resp.raise_for_status()
+            
             data = resp.json()
             if data.get("paymentUrl"):
                 return data.get("paymentUrl")
             else:
                 logger.error(f"Lava API error (no paymentUrl): {data}")
                 raise Exception(f"Lava API error: no paymentUrl")
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Failed to create Lava invoice (HTTP {e.response.status_code}): {e.response.text}")
+        return f"https://lava.top/pay/fallback_{offer_id}"
     except Exception as e:
         logger.error(f"Failed to create Lava invoice: {e}")
         # Return fallback for testing
