@@ -1,55 +1,10 @@
 """
 Интеграция с Lava.top
 """
-import httpx
 import logging
-import json
+import httpx
 
 logger = logging.getLogger(__name__)
-
-async def create_invoice(lava_api_key: str, user_id: int, offer_id: str, buyer_email: str) -> str:
-    """
-    Создаёт счёт через Lava.top API v2.
-    Возвращает paymentUrl для оплаты.
-    """
-    logger.info(f"Sending to Lava: email={buyer_email}, offerId={offer_id}")
-    
-    url = "https://gate.lava.top/api/v2/invoice"
-    
-    payload = {
-        "email": buyer_email,
-        "offerId": offer_id,
-        "currency": "RUB",
-        "buyerLanguage": "RU",
-        "clientUtm": {"utm_source": str(user_id)}
-    }
-
-    
-    headers = {
-        "Content-Type": "application/json",
-        "X-Api-Key": lava_api_key
-    }
-    
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            if not resp.is_success:
-                logger.error(f"Lava API error response [{resp.status_code}]: {resp.text}")
-            resp.raise_for_status()
-            
-            data = resp.json()
-            if data.get("paymentUrl"):
-                return data.get("paymentUrl")
-            else:
-                logger.error(f"Lava API error (no paymentUrl): {data}")
-                raise Exception(f"Lava API error: no paymentUrl")
-    except httpx.HTTPStatusError as e:
-        logger.error(f"Failed to create Lava invoice (HTTP {e.response.status_code}): {e.response.text}")
-        return f"https://lava.top/pay/fallback_{offer_id}"
-    except Exception as e:
-        logger.error(f"Failed to create Lava invoice: {e}")
-        # Return fallback for testing
-        return f"https://lava.top/pay/fallback_{offer_id}"
 
 def check_webhook_signature(headers: dict, api_key: str) -> bool:
     """

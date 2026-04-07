@@ -49,35 +49,57 @@ async def lava_webhook(request: web.Request) -> web.Response:
     if not check_webhook_signature(request.headers, config.lava_api_key):
         return web.Response(status=403, text="Invalid signature")
     
-    # We match by clientUtm.utm_source (user_id) and offerId from the invoice if available.
-    # Alternatively we can find pending payment by offer_id and user_id. Let's do that.
-    # We will need to write custom query if multiple pendings exist, but let's assume the user has 1 pending for this offer.
-    # Wait, the instruction says: Находит payment по clientUtm.utm_source (user_id) и сумме/offer.
-    
-    invoice = payload.get("invoice", payload) # Depends on their payload structure
+    invoice = payload.get("invoice", payload)
     status = invoice.get("status")
     
     if status == "COMPLETED" or status == "success":
         client_utm = invoice.get("clientUtm", {})
-        user_id_str = client_utm.get("utm_source")
-        offer_id = invoice.get("offerId")
+        utm_source = client_utm.get("utm_source", "")
         
-        if user_id_str and offer_id:
-            user_id = int(user_id_str)
-            from sqlalchemy import select
-            async with async_session() as session:
-                from database import Payment
-                # Find pending payment by user_id and offer_id
-                stmt = select(Payment).where(Payment.user_id == user_id, Payment.lava_invoice_id == offer_id, Payment.status == "pending")
-                payment = (await session.execute(stmt)).scalars().first()
-                
-                if payment:
-                    await update_payment_status(session, payment.id, "paid")
-                    await update_user_minutes(session, user_id, added_balance=payment.minutes_added, is_trial=False)
+        # Determine package logic (can fall back by sum or product_id)
+        invoice_id = invoice.get("id")
+        amount = float(invoice.get("sum", 0))
+        
+        minutes_added = 0
+        package_name = "Unknown"
+        if amount >= 3990:
+            minutes_added = 1500
+            package_name = "L"
+        elif amount >= 1790:
+            minutes_added = 600
+            package_name = "M"
+        elif amount >= 990:
+            minutes_added = 300
+            package_name = "S"
+            
+        if utm_source.startswith("tg_") and minutes_added > 0:
+            user_id_str = utm_source.replace("tg_", "")
+            if user_id_str.isdigit():
+                user_id = int(user_id_str)
+                from sqlalchemy import select
+                async with async_session() as session:
+                    from database import Payment, create_payment
+                    # Check if this invoice was already processed
+                    stmt = select(Payment).where(Payment.lava_invoice_id == str(invoice_id), Payment.status == "paid")
+                    existing = (await session.execute(stmt)).scalars().first()
                     
-                    user = await get_user_by_id(session, user_id)
-                    if user:
-                        await bot.send_message(user.telegram_id, f"✅ Оплата прошла успешно! Вам начислено {payment.minutes_added} минут.")
+                    if not existing:
+                        # Create payment record
+                        await create_payment(
+                            session, user_id, str(invoice_id) or "direct", package_name,
+                            int(amount), minutes_added, str(invoice_id)
+                        )
+                        # Find the just created payment and set to paid
+                        new_payment_stmt = select(Payment).where(Payment.lava_invoice_id == str(invoice_id))
+                        new_payment = (await session.execute(new_payment_stmt)).scalars().first()
+                        if new_payment:
+                            await update_payment_status(session, new_payment.id, "paid")
+                        
+                        await update_user_minutes(session, user_id, added_balance=minutes_added, is_trial=False)
+                        
+                        user = await get_user_by_id(session, user_id)
+                        if user:
+                            await bot.send_message(user.telegram_id, f"✅ Оплата прошла успешно! Вам начислено {minutes_added} минут.")
                     
     return web.json_response({"status": "ok"})
 
