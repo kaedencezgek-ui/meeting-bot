@@ -15,7 +15,7 @@ from aiogram.enums import ParseMode
 
 from config import load_config
 from database import init_db, async_session, get_payment_by_order_id, update_payment_status, get_user_by_id, update_user_minutes
-from handlers import start, audio, payments
+from handlers import start, audio, payments, admin
 from services.payments import check_webhook_signature
 
 def setup_logging() -> None:
@@ -135,6 +135,7 @@ async def main() -> None:
     dp["config"] = config
 
     # Подключаем роутеры
+    dp.include_router(admin.router)
     dp.include_router(start.router)
     dp.include_router(payments.router)
     dp.include_router(audio.router)

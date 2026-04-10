@@ -199,7 +199,10 @@ async def _process_audio(
             username=message.from_user.username,
         )
         # Check balance
-        if user.minutes_balance <= 0:
+        if user.telegram_id == config.admin_telegram_id:
+            # пропустить проверку баланса
+            pass
+        elif user.minutes_balance <= 0:
             await message.answer(
                 "❌ Недостаточно минут для обработки. Пожалуйста, пополните баланс.",
                 reply_markup=__import__("aiogram.types", fromlist=["InlineKeyboardMarkup"]).InlineKeyboardMarkup(inline_keyboard=[[
@@ -370,7 +373,10 @@ async def _process_cloud_link(
             telegram_id=message.from_user.id,
             username=message.from_user.username,
         )
-        if user.minutes_balance <= 0:
+        if user.telegram_id == config.admin_telegram_id:
+            # пропустить проверку баланса
+            pass
+        elif user.minutes_balance <= 0:
             await message.answer(
                 "❌ Недостаточно минут для обработки. Пожалуйста, пополните баланс.",
                 reply_markup=__import__("aiogram.types", fromlist=["InlineKeyboardMarkup"]).InlineKeyboardMarkup(inline_keyboard=[[
