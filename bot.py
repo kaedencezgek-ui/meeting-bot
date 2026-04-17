@@ -37,6 +37,25 @@ def setup_logging() -> None:
     file_handler.setLevel(logging.ERROR)
     file_handler.setFormatter(fmt)
     root_logger.addHandler(file_handler)
+
+    # Подавляем спам от aiohttp (сканеры, 404 и т.д.)
+    logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
+    logging.getLogger("aiohttp.server").setLevel(logging.WARNING)
+
+
+@web.middleware
+async def security_middleware(request: web.Request, handler) -> web.Response:
+    """
+    Middleware для защиты от сканеров:
+    - Пропускает только запросы на /webhook/lava
+    - Всё остальное — тихий 403
+    """
+    if request.path != "/webhook/lava":
+        # Тихо отклоняем мусорные запросы от сканеров
+        return web.Response(status=403)
+    return await handler(request)
+
+
 async def lava_webhook(request: web.Request) -> web.Response:
     bot: Bot = request.app["bot"]
     config = request.app["config"]
@@ -111,7 +130,7 @@ async def main() -> None:
 
     # Загружаем конфигурацию
     config = load_config()
-    logger.info("Конфигурация загружена (модель: %s)", config.openrouter_model)
+    logger.info("Конфигурация загружена (модель: %s)", config.openai_model)
 
     # Инициализируем базу данных
     await init_db()
@@ -141,16 +160,17 @@ async def main() -> None:
     dp.include_router(audio.router)
     
     # Инициализируем aiohttp web server
-    app = web.Application()
+    app = web.Application(middlewares=[security_middleware])
     app["bot"] = bot
     app["config"] = config
     app.router.add_post("/webhook/lava", lava_webhook)
     
-    runner = web.AppRunner(app)
+    runner = web.AppRunner(app, handle_signals=False)
     await runner.setup()
     site = web.TCPSite(runner, '0.0.0.0', 8080)
     await site.start()
     logger.info("Webhook-сервер запущен на порту 8080")
+    logger.info("Webhook URL: http://0.0.0.0:8080/webhook/lava")
 
     # Запускаем polling
     logger.info("AI Секретарь запущен (polling)!")

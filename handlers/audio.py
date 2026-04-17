@@ -245,8 +245,8 @@ async def _process_audio(
 
         report = await summarize_transcript(
             transcript=transcript_result.text,
-            api_key=config.openrouter_api_key,
-            model=config.openrouter_model,
+            api_key=config.openai_api_key,
+            model=config.openai_model,
         )
 
         # ── Шаг 3: обновляем БД ──
@@ -414,8 +414,8 @@ async def _process_cloud_link(
 
         report = await summarize_transcript(
             transcript=transcript_result.text,
-            api_key=config.openrouter_api_key,
-            model=config.openrouter_model,
+            api_key=config.openai_api_key,
+            model=config.openai_model,
         )
 
         # ── Шаг 3: обновляем БД ──

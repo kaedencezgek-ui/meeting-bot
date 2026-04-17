@@ -18,9 +18,9 @@ class Config:
     # AssemblyAI
     assemblyai_api_key: str
 
-    # OpenRouter
-    openrouter_api_key: str
-    openrouter_model: str
+    # OpenAI
+    openai_api_key: str
+    openai_model: str
 
     lava_api_key: str
     webhook_url: str
@@ -44,11 +44,11 @@ def load_config() -> Config:
     if not assemblyai_api_key:
         raise ValueError("ASSEMBLYAI_API_KEY не задан в .env")
 
-    openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-    if not openrouter_api_key:
-        raise ValueError("OPENROUTER_API_KEY не задан в .env")
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    if not openai_api_key:
+        raise ValueError("OPENAI_API_KEY не задан в .env")
 
-    openrouter_model = os.getenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet")
+    openai_model = os.getenv("OPENAI_MODEL", "gpt-4o")
     proxy_url = os.getenv("PROXY_URL")  # опционально
     
     lava_api_key = os.getenv("LAVA_API_KEY", "")
@@ -59,8 +59,8 @@ def load_config() -> Config:
     return Config(
         bot_token=bot_token,
         assemblyai_api_key=assemblyai_api_key,
-        openrouter_api_key=openrouter_api_key,
-        openrouter_model=openrouter_model,
+        openai_api_key=openai_api_key,
+        openai_model=openai_model,
         proxy_url=proxy_url,
         lava_api_key=lava_api_key,
         webhook_url=webhook_url,
